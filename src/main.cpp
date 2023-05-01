@@ -1,6 +1,5 @@
-#include "FrameBuffer.hpp"
 #include "ImGuiLayer.hpp"
-#include "Shader.hpp"
+#include "Texture.hpp"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -50,29 +49,6 @@ int main(void) {
 
     // Our state
     bool show_demo_window = true;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-    FrameBuffer* renderTarget = new FrameBuffer(640, 480);
-
-    // TESTING Rendering Setup Code
-    Shader* simpleShader = new Shader("shaders/triangleTest.vert", "shaders/triangleTest.frag");
-
-    glm::vec3 vertices[] = {
-        {-0.5, -0.5, 0.0},
-        {0.5, -0.5, 0.0},
-        {0.0,  0.5, 0.0}
-    };
-
-    unsigned int vaoID, vboID;
-    glGenBuffers(1, &vboID);
-    glGenVertexArrays(1, &vaoID);
-
-    glBindVertexArray(vaoID);
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-    glEnableVertexAttribArray(0);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -82,14 +58,6 @@ int main(void) {
         // Start the Dear ImGui frame
         uiLayer.begin();
 
-        renderTarget->bind();
-
-        simpleShader->bind();
-        glBindVertexArray(vaoID);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        renderTarget->unbind();
-
         uiLayer.render();
 
         if (show_demo_window)
@@ -97,28 +65,31 @@ int main(void) {
 
         ImGui::Begin("Settings");                          // Create a window called "Hello, world!" and append into it.
 
-        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+        ImGui::Text("Options");               // Display some text (you can use a format strings too)
         ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+        if (ImGui::Button("Render")) {
 
-        ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+        }
+
+        //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
         //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         ImGui::End();
 
 
-        ImGui::Begin("Viewport");
+        ImGui::Begin("Raytracer View");
 
         float width = ImGui::GetContentRegionAvail().x;
         float height = ImGui::GetContentRegionAvail().y;
 
-        // TODO:
-        ImGui::Image(
-                (ImTextureID)renderTarget->getTextureID(),
-                ImGui::GetContentRegionAvail(),
-                //ImGui::GetWindowSize(),
-                ImVec2(0, 1),
-                ImVec2(1, 0)
-                );
+        // TODO:Fill texture buffer using raycasting and display here:
+        //ImGui::Image(
+                //(ImTextureID)renderTarget->getTextureID(),
+                //ImGui::GetContentRegionAvail(),
+                ////ImGui::GetWindowSize(),
+                //ImVec2(0, 1),
+                //ImVec2(1, 0)
+                //);
 
         ImGui::End();
 
