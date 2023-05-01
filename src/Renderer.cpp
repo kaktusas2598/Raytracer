@@ -50,19 +50,15 @@ void Renderer::exportRaytracedPPM(const Hittable& world, uint32_t width, uint32_
 
 void Renderer::generateCheckerTexture(uint32_t width, uint32_t height) {
     onResize(width, height);
-    std::random_device randDevice;
-    std::mt19937 rng(randDevice());
-    std::uniform_int_distribution<GLubyte> distribution(0, 255);
 
     int c;
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
+            // Generate checkers
             c = ((((i&0x8)==0)^((j&0x8))==0))*255;
 
-            buffer[(j + i * width) * 4] = distribution(rng);
-            buffer[(j + i * width) * 4 + 1] = c;
-            buffer[(j + i * width) * 4 + 2] = c;
-            buffer[(j + i * width) * 4 + 3] = 255;
+            Color pixelColor(randomDouble(), c, c);
+            writeColorToBuffer(buffer, j, i, width, pixelColor, 1);
         }
     }
 
