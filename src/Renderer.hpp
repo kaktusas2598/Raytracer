@@ -9,6 +9,7 @@
 class Renderer {
     public:
         Renderer() = default;
+        ~Renderer() { delete[] buffer; }
 
         // Raytrace to texture pixel buffer
         void raytraceWorld(const Hittable& world, uint32_t width, uint32_t height);
