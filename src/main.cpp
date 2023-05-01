@@ -109,6 +109,8 @@ int main(void) {
 
         GLubyte pixels[height][width][4];
         unsigned char* buffer = new unsigned char[height * width * 4];
+        static float startTime = 0;
+        static float elapsedTime = 0;
 
         static unsigned char* colorChannel = new unsigned char{0};
 
@@ -131,6 +133,8 @@ int main(void) {
             std::mt19937 rng(randDevice());
             std::uniform_int_distribution<GLubyte> distribution(0, 255);
 
+            startTime = glfwGetTime();
+
             // Generate colour buffer, Alpha always 1.0
             for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
@@ -145,48 +149,50 @@ int main(void) {
 
             //////////////////////
             // Render to PPM image
-            std::ofstream outFile;
-            outFile.open("image.ppm");
-            outFile << "P3\n" << (int)width << ' ' << (int)height << "\n255\n";
+            //std::ofstream outFile;
+            //outFile.open("image.ppm");
+            //outFile << "P3\n" << (int)width << ' ' << (int)height << "\n255\n";
 
-            for (int j = height-1; j >= 0; --j) {
-                std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
-                for (int i = 0; i < width; ++i) {
-                    auto u = double(i) / (width-1);
-                    auto v = double(j) / (height-1);
-                    Ray r(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
-                    Color pixelColor = rayColor(r, world);
+            //for (int j = height-1; j >= 0; --j) {
+                //std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+                //for (int i = 0; i < width; ++i) {
+                    //auto u = double(i) / (width-1);
+                    //auto v = double(j) / (height-1);
+                    //Ray r(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
+                    //Color pixelColor = rayColor(r, world);
 
-                    writeColorPPM(outFile, pixelColor);
-                }
-            }
-            outFile.close();
+                    //writeColorPPM(outFile, pixelColor);
+                //}
+            //}
+            //outFile.close();
             //////////////////////
 
 
             /////////////////////
-            int c;
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    // Use c to generate checkered texture! from OpenGL red book
-                    c = ((((i&0x8)==0)^((j&0x8))==0))*255;
-                    pixels[i][j][0] = (GLubyte) distribution(rng);
-                    pixels[i][j][1] = (GLubyte) *colorChannel;
-                    pixels[i][j][2] = (GLubyte) *colorChannel;
-                    pixels[i][j][3] = (GLubyte) 255;
-                }
-            }
+            //// Generate checkered texture! from OpenGL red book
+            //int c;
+            //for (int i = 0; i < height; i++) {
+                //for (int j = 0; j < width; j++) {
+                    //c = ((((i&0x8)==0)^((j&0x8))==0))*255;
+                    //pixels[i][j][0] = (GLubyte) distribution(rng);
+                    //pixels[i][j][1] = (GLubyte) *colorChannel;
+                    //pixels[i][j][2] = (GLubyte) *colorChannel;
+                    //pixels[i][j][3] = (GLubyte) 255;
+                //}
+            //}
             ////////////////////////////
 
             //rayTracedImage->setData((unsigned char*)pixels);
             rayTracedImage->setData(buffer);
             rayTracedImage->init(width, height);
 
+            elapsedTime = (glfwGetTime() - startTime) * 1000;
         }
 
         const unsigned char min = 0;
         const unsigned char max = 255;
         ImGui::SliderScalar("Color", ImGuiDataType_U8, colorChannel, &min, &max);
+        ImGui::Text("Render time: %.1f ms", elapsedTime);
 
         ImGui::End();
 
