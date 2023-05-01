@@ -30,6 +30,12 @@ inline int randomInt(int min = 0, int max = 255) {
     return distribution(generator);
 }
 
+inline double clamp(double x, double min, double max) {
+    if (x < min) return min;
+    if (x > max) return max;
+    return x;
+}
+
 
 // Common Headers
 #include "Ray.hpp"
