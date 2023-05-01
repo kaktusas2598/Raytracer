@@ -67,7 +67,7 @@ int main(void) {
     uiLayer.init(window);
 
     // Our state
-    bool show_demo_window = true;
+    bool showDemoWindow = true;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -79,8 +79,8 @@ int main(void) {
 
         uiLayer.render();
 
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+        if (showDemoWindow)
+            ImGui::ShowDemoWindow(&showDemoWindow);
 
 
 
@@ -90,6 +90,7 @@ int main(void) {
         int width = ImGui::GetContentRegionAvail().x;
         int height = ImGui::GetContentRegionAvail().y;
         auto aspectRatio = width / height;
+        //auto aspectRatio = 16.0 / 9.0;
 
         // World
         HittableList world;
@@ -124,11 +125,11 @@ int main(void) {
 
         ImGui::End();
 
-        ImGui::Begin("Settings");                          // Create a window called "Hello, world!" and append into it.
+        ImGui::Begin("Settings");
 
-        ImGui::Text("Options");               // Display some text (you can use a format strings too)
-        ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-        if (ImGui::Button("Render")) {
+        // Render for viewport
+        ImGui::Checkbox("Demo Window", &showDemoWindow);
+        if (ImGui::Button("Render raycast")) {
             std::random_device randDevice;
             std::mt19937 rng(randDevice());
             std::uniform_int_distribution<GLubyte> distribution(0, 255);
@@ -147,47 +148,68 @@ int main(void) {
                 }
             }
 
-            //////////////////////
-            // Render to PPM image
-            //std::ofstream outFile;
-            //outFile.open("image.ppm");
-            //outFile << "P3\n" << (int)width << ' ' << (int)height << "\n255\n";
-
-            //for (int j = height-1; j >= 0; --j) {
-                //std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
-                //for (int i = 0; i < width; ++i) {
-                    //auto u = double(i) / (width-1);
-                    //auto v = double(j) / (height-1);
-                    //Ray r(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
-                    //Color pixelColor = rayColor(r, world);
-
-                    //writeColorPPM(outFile, pixelColor);
-                //}
-            //}
-            //outFile.close();
-            //////////////////////
-
-
-            /////////////////////
-            //// Generate checkered texture! from OpenGL red book
-            //int c;
-            //for (int i = 0; i < height; i++) {
-                //for (int j = 0; j < width; j++) {
-                    //c = ((((i&0x8)==0)^((j&0x8))==0))*255;
-                    //pixels[i][j][0] = (GLubyte) distribution(rng);
-                    //pixels[i][j][1] = (GLubyte) *colorChannel;
-                    //pixels[i][j][2] = (GLubyte) *colorChannel;
-                    //pixels[i][j][3] = (GLubyte) 255;
-                //}
-            //}
-            ////////////////////////////
-
-            //rayTracedImage->setData((unsigned char*)pixels);
             rayTracedImage->setData(buffer);
             rayTracedImage->init(width, height);
 
             elapsedTime = (glfwGetTime() - startTime) * 1000;
         }
+
+        // Render to PPM image file
+        if (ImGui::Button("Export to PPM")) {
+            std::random_device randDevice;
+            std::mt19937 rng(randDevice());
+            std::uniform_int_distribution<GLubyte> distribution(0, 255);
+
+            startTime = glfwGetTime();
+
+            std::ofstream outFile;
+            outFile.open("image.ppm");
+            outFile << "P3\n" << (int)width << ' ' << (int)height << "\n255\n";
+
+            for (int j = height-1; j >= 0; --j) {
+                std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+                for (int i = 0; i < width; ++i) {
+                    auto u = double(i) / (width-1);
+                    auto v = double(j) / (height-1);
+                    Ray r(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
+                    Color pixelColor = rayColor(r, world);
+
+                    writeColorPPM(outFile, pixelColor);
+                }
+            }
+            outFile.close();
+
+            rayTracedImage->setData(buffer);
+            rayTracedImage->init(width, height);
+
+            elapsedTime = (glfwGetTime() - startTime) * 1000;
+        }
+
+        // Generate checkered texture from OpenGL red book
+        if (ImGui::Button("Checkered pattern")) {
+            std::random_device randDevice;
+            std::mt19937 rng(randDevice());
+            std::uniform_int_distribution<GLubyte> distribution(0, 255);
+
+            startTime = glfwGetTime();
+
+            int c;
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    c = ((((i&0x8)==0)^((j&0x8))==0))*255;
+                    pixels[i][j][0] = (GLubyte) distribution(rng);
+                    pixels[i][j][1] = (GLubyte) c;
+                    pixels[i][j][2] = (GLubyte) c;
+                    pixels[i][j][3] = (GLubyte) 255;
+                }
+            }
+
+            rayTracedImage->setData((unsigned char*)pixels);
+            rayTracedImage->init(width, height);
+
+            elapsedTime = (glfwGetTime() - startTime) * 1000;
+        }
+
 
         const unsigned char min = 0;
         const unsigned char max = 255;
