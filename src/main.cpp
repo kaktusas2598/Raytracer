@@ -68,7 +68,7 @@ int main(void) {
     uiLayer.init(window);
 
     // Our state
-    bool showDemoWindow = true;
+    bool showDemoWindow = false;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -207,8 +207,10 @@ int main(void) {
 
         const unsigned char min = 0;
         const unsigned char max = 255;
+        ImGui::PushItemWidth(150);
         ImGui::DragInt("Number of Samples per Pixel", &samplesPerPixel);
         ImGui::Text("Render time: %.1f ms", elapsedTime);
+        ImGui::PopItemWidth();
 
         ImGui::End();
 
