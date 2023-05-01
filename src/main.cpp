@@ -5,9 +5,22 @@
 #include <GLFW/glfw3.h>
 #include <cstdio>
 #include <random>
+#include <fstream>
 
+#include "Common.hpp"
 #include "Color.hpp"
-#include "Vec3.hpp"
+#include "HittableList.hpp"
+#include "Sphere.hpp"
+
+Color rayColor(const Ray& r, const Hittable& world) {
+    HitRecord rec;
+    if (world.hit(r, 0, INF, rec)) {
+        return 0.5 * (rec.normal + Color(1,1,1));
+    }
+    Vec3 normalizedDir = normalize(r.direction());
+    auto t = 0.5*(normalizedDir.y() + 1.0);
+    return (1.0-t)*Color(1.0, 1.0, 1.0) + t*Color(0.5, 0.7, 1.0);
+}
 
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
@@ -73,12 +86,29 @@ int main(void) {
 
         ImGui::Begin("Raytracer View");
 
-        float width = ImGui::GetContentRegionAvail().x;
-        float height = ImGui::GetContentRegionAvail().y;
+        // Image setup
+        int width = ImGui::GetContentRegionAvail().x;
+        int height = ImGui::GetContentRegionAvail().y;
+        auto aspectRatio = width / height;
 
-        GLubyte pixels[int(height)][int(width)][4];
-        //GLubyte* pixels = new GLubyte[int(height)*int(width)*4];
-        unsigned char* buffer = new unsigned char[int(height) * int(width) * 4];
+        // World
+        HittableList world;
+        world.add(make_shared<Sphere>(Point3(0,0,-1), 0.5));
+        world.add(make_shared<Sphere>(Point3(0,-100.5,-1), 100));
+
+        // Camera setup
+        // FIXME: only rendering sphere correctly if viewport window is big in imgui, probably because of viewport settings here
+        auto viewportHeight = 2.0;
+        auto viewportWidth = aspectRatio * viewportHeight;
+        auto focalLength = 1.0;
+
+        auto origin = Point3(0, 0, 0);
+        auto horizontal = Vec3(viewportWidth, 0, 0);
+        auto vertical = Vec3(0, viewportHeight, 0);
+        auto lowerLeftCorner = origin - horizontal/2 - vertical/2 - Vec3(0, 0, focalLength);
+
+        GLubyte pixels[height][width][4];
+        unsigned char* buffer = new unsigned char[height * width * 4];
 
         static unsigned char* colorChannel = new unsigned char{0};
 
@@ -101,36 +131,44 @@ int main(void) {
             std::mt19937 rng(randDevice());
             std::uniform_int_distribution<GLubyte> distribution(0, 255);
 
-            //for (int i = 0; i < int(height) * int(width) * 4; i+=4) {
-                //buffer[i] = distribution(rng);
-                //buffer[i + 1] = distribution(rng);
-                //buffer[i + 2] = distribution(rng);
-                //buffer[i + 3] = 255;
-            //}
-
+            // Generate colour buffer, Alpha always 1.0
             for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
-                    Color pixelColor(double(i)/(width-1), double(j)/(height-1), 0.25);
-
-                    writeColorToBuffer(buffer, j, i, (int)width, pixelColor);
-
-                    //buffer[(j + i * (int)width) * 4] = 255;
-                    //buffer[(j + i * (int)width) * 4 + 1] = 255;
-                    //buffer[(j + i * (int)width) * 4 + 2] = 255;
-                    //buffer[(j + i * (int)width) * 4 + 3] = 255;
-                    //
-                    //buffer[i * (int)width * 4 + j] = 255;
-                    //buffer[i * (int)width * 4 + j + 1] = 255;
-                    //buffer[i * (int)width * 4 + j + 2] = 255;
-                    //buffer[i * (int)width * 4 + j + 3] = 255;
+                    //Color pixelColor(double(i)/(width-1), double(j)/(height-1), 0.25);
+                    auto u = double(j) / (width-1);
+                    auto v = double(i) / (height-1);
+                    Ray r(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
+                    Color pixelColor = rayColor(r, world);
+                    writeColorToBuffer(buffer, j, i, width, pixelColor);
                 }
             }
 
+            //////////////////////
+            // Render to PPM image
+            std::ofstream outFile;
+            outFile.open("image.ppm");
+            outFile << "P3\n" << (int)width << ' ' << (int)height << "\n255\n";
+
+            for (int j = height-1; j >= 0; --j) {
+                std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+                for (int i = 0; i < width; ++i) {
+                    auto u = double(i) / (width-1);
+                    auto v = double(j) / (height-1);
+                    Ray r(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
+                    Color pixelColor = rayColor(r, world);
+
+                    writeColorPPM(outFile, pixelColor);
+                }
+            }
+            outFile.close();
+            //////////////////////
 
 
+            /////////////////////
             int c;
             for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
+                    // Use c to generate checkered texture! from OpenGL red book
                     c = ((((i&0x8)==0)^((j&0x8))==0))*255;
                     pixels[i][j][0] = (GLubyte) distribution(rng);
                     pixels[i][j][1] = (GLubyte) *colorChannel;
@@ -138,6 +176,7 @@ int main(void) {
                     pixels[i][j][3] = (GLubyte) 255;
                 }
             }
+            ////////////////////////////
 
             //rayTracedImage->setData((unsigned char*)pixels);
             rayTracedImage->setData(buffer);
