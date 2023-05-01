@@ -71,7 +71,6 @@ int main(void) {
             ImGui::ShowDemoWindow(&showDemoWindow);
 
 
-
         ImGui::Begin("Raytracer View");
 
         // Image setup
@@ -120,10 +119,6 @@ int main(void) {
 
         // Generate checkered texture from OpenGL red book
         if (ImGui::Button("Checkered pattern")) {
-            std::random_device randDevice;
-            std::mt19937 rng(randDevice());
-            std::uniform_int_distribution<GLubyte> distribution(0, 255);
-
             startTime = glfwGetTime();
 
             renderer.generateCheckerTexture(width, height);
