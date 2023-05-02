@@ -1,6 +1,7 @@
 #include "Sphere.hpp"
 
 
+// Ray - sphere intersection
 bool Sphere::hit(const Ray& r, double tMin, double tMax, HitRecord& rec) const {
     Vec3 oc = r.origin() - center;
     // Calculate quadratic formula coefficients
@@ -13,9 +14,9 @@ bool Sphere::hit(const Ray& r, double tMin, double tMax, HitRecord& rec) const {
     auto sqrtd = sqrt(discriminant);
 
     // Find the nearest root that lies in the aceptable range
-    auto root = (-halfB - sqrtd) / a;
+    auto root = (-halfB - sqrtd) / a; // 1st root
     if (root < tMin || tMax < root) {
-        root = (-halfB + sqrtd) / a;
+        root = (-halfB + sqrtd) / a; // 2nd root
         if (root < tMin || tMax < root) {
             return false;
         }
@@ -24,6 +25,7 @@ bool Sphere::hit(const Ray& r, double tMin, double tMax, HitRecord& rec) const {
     rec.t = root;
     rec.p = r.at(rec.t);
     Vec3 outwardNormal = (rec.p - center) / radius;
+    // Determine if ray hit front or back face
     rec.setFaceNormal(r, outwardNormal);
 
     return true;

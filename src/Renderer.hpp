@@ -26,9 +26,11 @@ class Renderer {
         static Color rayColor(const Ray& r, const Hittable& world) {
             HitRecord rec;
             if (world.hit(r, 0, INF, rec)) {
+                // Visualise spehere's normals
                 return 0.5 * (rec.normal + Color(1,1,1));
             }
             Vec3 normalizedDir = normalize(r.direction());
+            // Background colour gradient
             auto t = 0.5*(normalizedDir.y() + 1.0);
             return (1.0-t)*Color(1.0, 1.0, 1.0) + t*Color(0.5, 0.7, 1.0);
         }
