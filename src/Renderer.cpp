@@ -8,16 +8,16 @@ int Renderer::SamplesPerPixel = 1;
 void Renderer::raytraceWorld(const Hittable& world, uint32_t width, uint32_t height) {
     onResize(width, height);
 
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
+    for (int j = 0; j < height; j++) {
+        for (int i = 0; i < width; i++) {
             Color pixelColor(0,0,0);
             for (int s = 0; s < SamplesPerPixel; ++s) {
-                auto u = (j + randomDouble()) / (width - 1);
-                auto v = (i + randomDouble()) / (height - 1);
+                auto u = (i + randomDouble()) / (width - 1);
+                auto v = (j + randomDouble()) / (height - 1);
                 Ray r = camera.getRay(u, v);
                 pixelColor += rayColor(r, world);
             }
-            writeColorToBuffer(buffer, j, i, width, pixelColor, SamplesPerPixel);
+            writeColorToBuffer(buffer, i, j, width, pixelColor, SamplesPerPixel);
         }
     }
 
@@ -52,13 +52,13 @@ void Renderer::generateCheckerTexture(uint32_t width, uint32_t height) {
     onResize(width, height);
 
     int c;
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
+    for (int j = 0; j < height; j++) {
+        for (int i = 0; i < width; i++) {
             // Generate checkers
-            c = ((((i&0x8)==0)^((j&0x8))==0))*255;
+            c = ((((j&0x8)==0)^((i&0x8))==0))*255;
 
             Color pixelColor(randomDouble(), c, c);
-            writeColorToBuffer(buffer, j, i, width, pixelColor, 1);
+            writeColorToBuffer(buffer, i, j, width, pixelColor, 1);
         }
     }
 
