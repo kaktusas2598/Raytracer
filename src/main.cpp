@@ -129,10 +129,14 @@ int main(void) {
         const unsigned char min = 0;
         const unsigned char max = 255;
         ImGui::PushItemWidth(150);
-        ImGui::DragInt("Number of Samples per Pixel", &Renderer::SamplesPerPixel);
-        ImGui::Text("Render time: %.1f ms", elapsedTime);
+        ImGui::DragInt("Number of samples per pixel", renderer.getSamplesPerPixel());
+        ImGui::DragInt("Number of light ray bounces", renderer.getMaxDepth());
+
+        ImGui::RadioButton("Render Diffuse", renderer.getRenderType(), 0); ImGui::SameLine();
+        ImGui::RadioButton("Render Normals", renderer.getRenderType(), 1);
         ImGui::PopItemWidth();
 
+        ImGui::Text("Render time: %.1f ms", elapsedTime);
         ImGui::End();
 
         uiLayer.end();

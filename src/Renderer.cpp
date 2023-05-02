@@ -3,21 +3,19 @@
 #include <iostream>
 #include <fstream>
 
-int Renderer::SamplesPerPixel = 1;
-
 void Renderer::raytraceWorld(const Hittable& world, uint32_t width, uint32_t height) {
     onResize(width, height);
 
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
             Color pixelColor(0,0,0);
-            for (int s = 0; s < SamplesPerPixel; ++s) {
+            for (int s = 0; s < samplesPerPixel; ++s) {
                 auto u = (i + randomDouble()) / (width - 1);
                 auto v = (j + randomDouble()) / (height - 1);
                 Ray r = camera.getRay(u, v);
-                pixelColor += rayColor(r, world);
+                pixelColor += rayColor(r, world, maxDepth);
             }
-            writeColorToBuffer(buffer, i, j, width, pixelColor, SamplesPerPixel);
+            writeColorToBuffer(buffer, i, j, width, pixelColor, samplesPerPixel);
         }
     }
 
@@ -35,13 +33,13 @@ void Renderer::exportRaytracedPPM(const Hittable& world, uint32_t width, uint32_
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < width; ++i) {
             Color pixelColor(0,0,0);
-            for (int s = 0; s < SamplesPerPixel; ++s) {
+            for (int s = 0; s < samplesPerPixel; ++s) {
                 auto u = (i + randomDouble()) / (width-1);
                 auto v = (j + randomDouble()) / (height-1);
                 Ray r = camera.getRay(u, v);
-                pixelColor += Renderer::rayColor(r, world);
+                pixelColor += Renderer::rayColor(r, world, maxDepth);
             }
-            writeColorPPM(outFile, pixelColor, SamplesPerPixel);
+            writeColorPPM(outFile, pixelColor, samplesPerPixel);
         }
     }
     std::cerr << "Done.\n";

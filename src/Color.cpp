@@ -23,11 +23,11 @@ void writeColorToBuffer(unsigned char* buffer, int x, int y, int width, Color pi
     auto g = pixelColor.y();
     auto b = pixelColor.z();
 
-    // Divied by number of samples
+    // Divied by number of samples and gamma correct for gamma=2.0
     double scale = 1.0 / samplesPerPixel;
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = sqrt(scale * r);
+    g = sqrt(scale * g);
+    b = sqrt(scale * b);
 
     // Write the translated [0,255] value of each color component.
     buffer[(x + y * (int)width) * 4] = static_cast<int>(256 * clamp(r, 0.0, 0.999));
