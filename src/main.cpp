@@ -22,6 +22,14 @@ Texture* rayTracedImage = new Texture(GL_TEXTURE_2D);
 Renderer renderer;
 
 int main(void) {
+    // World
+    HittableList world;
+    world.add(make_shared<Sphere>(Point3(0,0,-1), 0.5));
+    world.add(make_shared<Sphere>(Point3(0,-100.5,-1), 100));
+
+    static float startTime = 0;
+    static float elapsedTime = 0;
+
     GLFWwindow* window;
 
     glfwSetErrorCallback(errorCallback);
@@ -76,16 +84,7 @@ int main(void) {
         // Image setup
         int width = ImGui::GetContentRegionAvail().x;
         int height = ImGui::GetContentRegionAvail().y;
-
         renderer.onResize(width, height);
-
-        // World
-        HittableList world;
-        world.add(make_shared<Sphere>(Point3(0,0,-1), 0.5));
-        world.add(make_shared<Sphere>(Point3(0,-100.5,-1), 100));
-
-        static float startTime = 0;
-        static float elapsedTime = 0;
 
         ImGui::Image(
                 (ImTextureID)renderer.getTextureID(),
@@ -133,7 +132,8 @@ int main(void) {
         ImGui::DragInt("Number of light ray bounces", renderer.getMaxDepth());
 
         ImGui::RadioButton("Render Diffuse", renderer.getRenderType(), 0); ImGui::SameLine();
-        ImGui::RadioButton("Render Normals", renderer.getRenderType(), 1);
+        ImGui::RadioButton("Render Normals", renderer.getRenderType(), 1); ImGui::SameLine();
+        ImGui::RadioButton("Render Hit points", renderer.getRenderType(), 2);
         ImGui::PopItemWidth();
 
         ImGui::Text("Render time: %.1f ms", elapsedTime);

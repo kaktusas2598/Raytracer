@@ -42,6 +42,9 @@ class Renderer {
                 } else if (renderType == 1) {
                     // Visualise spehere's normals
                     return 0.5 * (rec.normal + Color(1,1,1));
+                } else if (renderType == 2) {
+                    // Visualise ray hit points
+                    return (rec.p);
                 }
             }
             Vec3 normalizedDir = normalize(r.direction());
