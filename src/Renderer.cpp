@@ -65,7 +65,7 @@ void Renderer::generateCheckerTexture(uint32_t width, uint32_t height) {
 }
 
 void Renderer::onResize(uint32_t width, uint32_t height) {
-    if (!image) {
+    if (!image) { // || image->
         image = make_shared<Texture>(GL_TEXTURE_2D);
     } else {
         // NOTE: resize image here?

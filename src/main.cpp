@@ -9,6 +9,12 @@
 
 #include "Renderer.hpp"
 
+// GLOBALS
+Texture* rayTracedImage = new Texture(GL_TEXTURE_2D);
+Renderer renderer;
+glm::vec2 lastMousePosition{0.0, 0.0};
+
+// GLFW Callbacks
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
@@ -16,10 +22,42 @@ void errorCallback(int error, const char* description) {
 static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+    Camera* cam = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
+    cam->onKeyPress(key, action);
 }
 
-Texture* rayTracedImage = new Texture(GL_TEXTURE_2D);
-Renderer renderer;
+static void mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
+    // TODO: should be in camera onUpdate method
+    Camera* camera = renderer.getCamera();
+    glm::vec2 mousePosition = glm::vec2(xpos, ypos);
+    glm::vec2 delta = (mousePosition - lastMousePosition) * 0.002f; // mouse sensitivity
+    lastMousePosition = mousePosition;
+
+    // TODO: camera locking
+
+    // Will go after movement stuff in Camera onUpdate()
+    // Rotation
+    if (delta.x != 0.0f || delta.y != 0.0f) {
+        float pitchDelta = delta.y * camera->getRotationSpeed();
+        float yawDelta = delta.x * camera->getRotationSpeed();
+
+        //glm::quat q = glm::normalize(glm::cross(glm::angleAxis(-pitchDelta, rightDirection),
+                    //glm::angleAxis(-yawDelta, glm::vec3(0.0, 1.0, 0.0))));
+        //forwardDirection = glm::rotate(q, forwardDirection);
+        //moved = true;
+    }
+}
+
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    // TODO: camera on update mouse button behaviour
+    //if (button != GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
 
 int main(void) {
     // World
@@ -50,6 +88,10 @@ int main(void) {
     }
 
     glfwSetKeyCallback(window, keyCallback);
+    glfwSetCursorPosCallback(window, mousePositionCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
+    // Set custom user pointer to camera, so it can handle input
+    glfwSetWindowUserPointer(window, renderer.getCamera());
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
@@ -86,9 +128,15 @@ int main(void) {
         int height = ImGui::GetContentRegionAvail().y;
         renderer.onResize(width, height);
 
+        // Main real time tracer
+        // NOTE: blocks imgui wigets not allowing to change them
+        //startTime = glfwGetTime();
+        //renderer.raytraceWorld(world, width, height);
+        //elapsedTime = (glfwGetTime() - startTime) * 1000;
+
         ImGui::Image(
                 (ImTextureID)renderer.getTextureID(),
-                ImGui::GetContentRegionAvail(),
+                ImGui::GetContentRegionAvail(), // Use texture size instead?
                 ImVec2(0, 1),
                 ImVec2(1, 0)
                 );
@@ -97,7 +145,7 @@ int main(void) {
 
         ImGui::Begin("Settings");
 
-        // Render for viewport
+        ImGui::Text("Render time: %.1f ms", elapsedTime);
         ImGui::Checkbox("Demo Window", &showDemoWindow);
         if (ImGui::Button("Render raycast")) {
             startTime = glfwGetTime();
@@ -136,7 +184,6 @@ int main(void) {
         ImGui::RadioButton("Render Hit points", renderer.getRenderType(), 2);
         ImGui::PopItemWidth();
 
-        ImGui::Text("Render time: %.1f ms", elapsedTime);
         ImGui::End();
 
         uiLayer.end();

@@ -25,6 +25,8 @@ class Renderer {
 
         void onResize(uint32_t width, uint32_t height);
 
+        Camera* getCamera() { return &camera; }
+
         // Maybe move to color.hpp?
         Color rayColor(const Ray& r, const Hittable& world, int depth) {
             HitRecord rec;
@@ -63,8 +65,8 @@ class Renderer {
     private:
         shared_ptr<Texture> image = nullptr;
         unsigned char* buffer = nullptr;
-        int maxDepth = 10; //<<< Maximum number of light ray bounces
-        int samplesPerPixel = 5; // Higher sample count will solve aliasing issues, but decrease performance
+        int maxDepth = 5; //<<< Maximum number of light ray bounces
+        int samplesPerPixel = 1; // Higher sample count will solve aliasing issues, but decrease performance
         int renderType = 0;
 
         Camera camera;
