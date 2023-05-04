@@ -10,7 +10,8 @@ void Renderer::raytraceWorld(const Hittable& world, uint32_t width, uint32_t hei
     glm::vec3 rayOrigin = camera->getPosition();
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
-            glm::vec3 rayDirection = camera->getRayDirections()[i + j * width];
+            // Without anti-aliasing
+            //glm::vec3 rayDirection = camera->getRayDirections()[i + j * width];
             //Ray r = Ray(toVec3(rayOrigin), toVec3(rayDirection));
             //Color pixelColor = rayColor(r, world, maxDepth);
             // TODO: make sampling for anti-aliasing work with new camera system
@@ -19,8 +20,8 @@ void Renderer::raytraceWorld(const Hittable& world, uint32_t width, uint32_t hei
             for (int s = 0; s < samplesPerPixel; ++s) {
                 //auto u = (i + randomDouble()) / (width - 1);
                 //auto v = (j + randomDouble()) / (height - 1);
-                int u = clamp(i + randomInt(-1, 1), 0, width);
-                int v = clamp(j + randomInt( -1, 1), 0, height);
+                int u = clamp(i + randomInt(0, 1), 0, width);
+                int v = clamp(j + randomInt(0, 1), 0, height);
                 //printf ("u: %d, v: %d\n", u, v);
                 //Ray r = camera->getRay(u, v);
                 glm::vec3 rayDirection = camera->getRayDirections()[u + v * width];
