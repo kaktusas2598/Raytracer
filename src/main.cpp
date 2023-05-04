@@ -32,7 +32,7 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
         realTimeRendering = !realTimeRendering;
 
     Camera* cam = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
-    cam->onKeyPress(key, action);
+    cam->onKeyPress(key, action, deltaTime);
 }
 
 static void mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {

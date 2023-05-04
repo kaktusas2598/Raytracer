@@ -20,7 +20,7 @@ class Camera {
         Camera();
         Camera(float vertFOV, float near, float far);
 
-        void onKeyPress(int key, int action);
+        void onKeyPress(int key, int action, float timeStep);
         void onMouseMove(double xpos, double ypos);
         //void processKeyboard(CameraMovement direction, float deltaTime);
         //void processMouseMovement(float xOffset, float yOffset);

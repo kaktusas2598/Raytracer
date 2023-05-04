@@ -31,10 +31,8 @@ Camera::Camera(float vertFOV, float near, float far) :
 }
 
 
-void Camera::onKeyPress(int key, int action) {
+void Camera::onKeyPress(int key, int action, float timeStep) {
     // TODO: update actual movement from onUpdate() only set directions here
-    float timeStep = 1.0f;
-
 	float speed = 5.0f;
 	const glm::vec3 upDirection(0.0, 1.0, 0.0);
     rightDirection = glm::cross(forwardDirection, upDirection);
@@ -96,7 +94,6 @@ void Camera::onMouseMove(double xpos, double ypos) {
         glm::quat q = glm::normalize(glm::cross(glm::angleAxis(-pitchDelta, rightDirection),
                     glm::angleAxis(-yawDelta, glm::vec3(0.0, 1.0, 0.0))));
         forwardDirection = glm::rotate(q, forwardDirection);
-        printf("Forward direction changed.\n");
         moved = true;
     }
 }
