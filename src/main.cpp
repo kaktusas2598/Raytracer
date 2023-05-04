@@ -31,6 +31,14 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
         realTimeRendering = !realTimeRendering;
 
+    // MOVE all this to camera class
+    if (realTimeRendering) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    } else {
+
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+
     Camera* cam = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
     cam->onKeyPress(key, action, deltaTime);
 }
