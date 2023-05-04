@@ -30,7 +30,9 @@ void Camera::onKeyPress(int key, int action, float timeStep) {
 	    currentMovement = CameraMovement::BACKWARD;
 		position -= forwardDirection * speed * timeStep;
         moved = true;
-    } else if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+    }
+
+    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
 	    currentMovement = CameraMovement::LEFT;
 		position -= rightDirection * speed * timeStep;
         moved = true;
@@ -38,7 +40,9 @@ void Camera::onKeyPress(int key, int action, float timeStep) {
 	    currentMovement = CameraMovement::RIGHT;
 		position += rightDirection * speed * timeStep;
         moved = true;
-	} else if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+	}
+
+	if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
 	    currentMovement = CameraMovement::DOWN;
 		position -= upDirection * speed * timeStep;
         moved = true;
