@@ -1,5 +1,6 @@
 #pragma once
 
+#include <glm/glm.hpp>
 #include "Common.hpp"
 
 using std::sqrt;
@@ -113,6 +114,11 @@ inline Vec3 randomInUnitSphere() {
         if (p.lengthSquared() >= 1) continue;
         return p;
     }
+}
+
+// GLM adapter utilities
+inline Vec3 toVec3(const glm::vec3& glmVec) {
+    return Vec3(glmVec.x, glmVec.y, glmVec.z);
 }
 
 // Type aliases for Vec3

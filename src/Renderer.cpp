@@ -3,18 +3,24 @@
 #include <iostream>
 #include <fstream>
 
-void Renderer::raytraceWorld(const Hittable& world, uint32_t width, uint32_t height) {
+void Renderer::raytraceWorld(const Hittable& world, uint32_t width, uint32_t height, Camera* camera) {
     onResize(width, height);
 
+    // Important to make sure all rays have same origin here otherwise it will produce screen tearing effect
+    glm::vec3 rayOrigin = camera->getPosition();
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
-            Color pixelColor(0,0,0);
-            for (int s = 0; s < samplesPerPixel; ++s) {
-                auto u = (i + randomDouble()) / (width - 1);
-                auto v = (j + randomDouble()) / (height - 1);
-                Ray r = camera.getRay(u, v);
-                pixelColor += rayColor(r, world, maxDepth);
-            }
+            glm::vec3 rayDirection = camera->getRayDirections()[i + j * width];
+            Ray r = Ray(toVec3(rayOrigin), toVec3(rayDirection));
+            Color pixelColor = rayColor(r, world, maxDepth);
+            // TODO: make sampling for anti-aliasing work with new camera system
+            //Color pixelColor(0,0,0);
+            //for (int s = 0; s < samplesPerPixel; ++s) {
+                //auto u = (i + randomDouble()) / (width - 1);
+                //auto v = (j + randomDouble()) / (height - 1);
+                //Ray r = camera->getRay(u, v);
+                //pixelColor += rayColor(r, world, maxDepth);
+            //}
             writeColorToBuffer(buffer, i, j, width, pixelColor, samplesPerPixel);
         }
     }
@@ -24,21 +30,25 @@ void Renderer::raytraceWorld(const Hittable& world, uint32_t width, uint32_t hei
 
 }
 
-void Renderer::exportRaytracedPPM(const Hittable& world, uint32_t width, uint32_t height) {
+void Renderer::exportRaytracedPPM(const Hittable& world, uint32_t width, uint32_t height, Camera* camera) {
     std::ofstream outFile;
     outFile.open("image.ppm");
     outFile << "P3\n" << (int)width << ' ' << (int)height << "\n255\n";
 
+    glm::vec3 rayOrigin = camera->getPosition();
     for (int j = height-1; j >= 0; --j) {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < width; ++i) {
-            Color pixelColor(0,0,0);
-            for (int s = 0; s < samplesPerPixel; ++s) {
-                auto u = (i + randomDouble()) / (width-1);
-                auto v = (j + randomDouble()) / (height-1);
-                Ray r = camera.getRay(u, v);
-                pixelColor += Renderer::rayColor(r, world, maxDepth);
-            }
+            glm::vec3 rayDirection = camera->getRayDirections()[i + j * width];
+            Ray r = Ray(toVec3(rayOrigin), toVec3(rayDirection));
+            Color pixelColor = rayColor(r, world, maxDepth);
+            //Color pixelColor(0,0,0);
+            //for (int s = 0; s < samplesPerPixel; ++s) {
+                //auto u = (i + randomDouble()) / (width-1);
+                //auto v = (j + randomDouble()) / (height-1);
+                //Ray r = camera->getRay(u, v);
+                //pixelColor += Renderer::rayColor(r, world, maxDepth);
+            //}
             writeColorPPM(outFile, pixelColor, samplesPerPixel);
         }
     }

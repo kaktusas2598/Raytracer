@@ -12,9 +12,9 @@ class Renderer {
         ~Renderer() { delete[] buffer; }
 
         // Raytrace to texture pixel buffer
-        void raytraceWorld(const Hittable& world, uint32_t width, uint32_t height);
+        void raytraceWorld(const Hittable& world, uint32_t width, uint32_t height, Camera* camera);
         // Raytrace to fstream and write PPM image
-        void exportRaytracedPPM(const Hittable& world, uint32_t width, uint32_t height);
+        void exportRaytracedPPM(const Hittable& world, uint32_t width, uint32_t height, Camera* camera);
 
         void generateCheckerTexture(uint32_t width, uint32_t height);
 
@@ -24,8 +24,6 @@ class Renderer {
         int* getRenderType() { return &renderType; }
 
         void onResize(uint32_t width, uint32_t height);
-
-        Camera* getCamera() { return &camera; }
 
         // Maybe move to color.hpp?
         Color rayColor(const Ray& r, const Hittable& world, int depth) {
@@ -68,6 +66,4 @@ class Renderer {
         int maxDepth = 5; //<<< Maximum number of light ray bounces
         int samplesPerPixel = 1; // Higher sample count will solve aliasing issues, but decrease performance
         int renderType = 0;
-
-        Camera camera;
 };

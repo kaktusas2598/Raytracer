@@ -11,6 +11,9 @@
 
 // GLOBALS
 Texture* rayTracedImage = new Texture(GL_TEXTURE_2D);
+//Camera* mainCamera = new Camera();
+// FIXME: fix new camera system
+Camera* mainCamera = new Camera(45.0f, 0.1f, 100.0f);
 Renderer renderer;
 glm::vec2 lastMousePosition{0.0, 0.0};
 
@@ -29,7 +32,7 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
 
 static void mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
     // TODO: should be in camera onUpdate method
-    Camera* camera = renderer.getCamera();
+    //Camera* camera = renderer.getCamera();
     glm::vec2 mousePosition = glm::vec2(xpos, ypos);
     glm::vec2 delta = (mousePosition - lastMousePosition) * 0.002f; // mouse sensitivity
     lastMousePosition = mousePosition;
@@ -39,8 +42,8 @@ static void mousePositionCallback(GLFWwindow* window, double xpos, double ypos) 
     // Will go after movement stuff in Camera onUpdate()
     // Rotation
     if (delta.x != 0.0f || delta.y != 0.0f) {
-        float pitchDelta = delta.y * camera->getRotationSpeed();
-        float yawDelta = delta.x * camera->getRotationSpeed();
+        //float pitchDelta = delta.y * camera->getRotationSpeed();
+        //float yawDelta = delta.x * camera->getRotationSpeed();
 
         //glm::quat q = glm::normalize(glm::cross(glm::angleAxis(-pitchDelta, rightDirection),
                     //glm::angleAxis(-yawDelta, glm::vec3(0.0, 1.0, 0.0))));
@@ -91,7 +94,7 @@ int main(void) {
     glfwSetCursorPosCallback(window, mousePositionCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     // Set custom user pointer to camera, so it can handle input
-    glfwSetWindowUserPointer(window, renderer.getCamera());
+    glfwSetWindowUserPointer(window, mainCamera);
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
@@ -126,13 +129,15 @@ int main(void) {
         // Image setup
         int width = ImGui::GetContentRegionAvail().x;
         int height = ImGui::GetContentRegionAvail().y;
+
         renderer.onResize(width, height);
+        mainCamera->onResize(width, height);
 
         // Main real time tracer
         // NOTE: blocks imgui wigets not allowing to change them
-        //startTime = glfwGetTime();
-        //renderer.raytraceWorld(world, width, height);
-        //elapsedTime = (glfwGetTime() - startTime) * 1000;
+        startTime = glfwGetTime();
+        renderer.raytraceWorld(world, width, height, mainCamera);
+        elapsedTime = (glfwGetTime() - startTime) * 1000;
 
         ImGui::Image(
                 (ImTextureID)renderer.getTextureID(),
@@ -150,7 +155,7 @@ int main(void) {
         if (ImGui::Button("Render raycast")) {
             startTime = glfwGetTime();
 
-            renderer.raytraceWorld(world, width, height);
+            renderer.raytraceWorld(world, width, height, mainCamera);
 
             elapsedTime = (glfwGetTime() - startTime) * 1000;
         }
@@ -159,7 +164,7 @@ int main(void) {
         if (ImGui::Button("Export to PPM")) {
             startTime = glfwGetTime();
 
-            renderer.exportRaytracedPPM(world, width, height);
+            renderer.exportRaytracedPPM(world, width, height, mainCamera);
 
             elapsedTime = (glfwGetTime() - startTime) * 1000;
         }

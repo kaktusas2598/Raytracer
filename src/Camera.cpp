@@ -24,6 +24,9 @@ Camera::Camera(float vertFOV, float near, float far) :
 {
     forwardDirection = glm::vec3(0, 0, -1);
     position = glm::vec3(0, 0, 3);
+
+    // HACK:
+    recalculateView();
 }
 
 
