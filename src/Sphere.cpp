@@ -25,9 +25,9 @@ bool Sphere::hit(const Ray& r, double tMin, double tMax, HitRecord& rec) const {
     rec.t = root;
     // Use line equation to get hit point
     rec.p = r.at(rec.t); // could calculate for both roots for entry/exit ray intersections
-    //Vec3 outwardNormal = (rec.p - center) / radius;
+    Vec3 outwardNormal = (rec.p - center) / radius;
     // Determine if ray hit front or back face
-    //rec.setFaceNormal(r, outwardNormal);
+    rec.setFaceNormal(r, outwardNormal);
 
     return true;
 }
