@@ -19,8 +19,8 @@ void Renderer::raytraceWorld(const Hittable& world, uint32_t width, uint32_t hei
             for (int s = 0; s < samplesPerPixel; ++s) {
                 //auto u = (i + randomDouble()) / (width - 1);
                 //auto v = (j + randomDouble()) / (height - 1);
-                int u = fmin(i + (int)(round(randomDouble())), width);
-                int v = fmin(j + (int)(round(randomDouble())), height);
+                int u = clamp(i + randomInt(-1, 1), 0, width);
+                int v = clamp(j + randomInt( -1, 1), 0, height);
                 //printf ("u: %d, v: %d\n", u, v);
                 //Ray r = camera->getRay(u, v);
                 glm::vec3 rayDirection = camera->getRayDirections()[u + v * width];
