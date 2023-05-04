@@ -9,6 +9,17 @@
 
 #include "Renderer.hpp"
 
+// GLOBALS
+Texture* rayTracedImage = new Texture(GL_TEXTURE_2D);
+bool realTimeRendering = false;
+Camera* mainCamera = new Camera(45.0f, 0.1f, 100.0f);
+Renderer renderer;
+glm::vec2 lastMousePosition{0.0, 0.0};
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
+// GLFW Callbacks
 void errorCallback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
@@ -16,10 +27,22 @@ void errorCallback(int error, const char* description) {
 static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+    // Toggle real-time ray tracing
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+        realTimeRendering = !realTimeRendering;
+
+    // Example of setting user pointer to handle input
+    //Camera* cam = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
+    //cam->onKeyPress(key, action, deltaTime);
 }
 
-Texture* rayTracedImage = new Texture(GL_TEXTURE_2D);
-Renderer renderer;
+static void mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
+    //Camera* cam = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
+    //cam->onMouseMove(xpos, ypos);
+}
+
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) { }
+
 
 int main(void) {
     // World
@@ -50,6 +73,10 @@ int main(void) {
     }
 
     glfwSetKeyCallback(window, keyCallback);
+    glfwSetCursorPosCallback(window, mousePositionCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
+    // Set custom user pointer to camera, so it can handle input
+    glfwSetWindowUserPointer(window, mainCamera);
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
@@ -67,8 +94,13 @@ int main(void) {
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         /* Poll for and process events */
         glfwPollEvents();
+        mainCamera->onUpdate(window, deltaTime);
 
         // Start the Dear ImGui frame
         uiLayer.begin();
@@ -84,11 +116,20 @@ int main(void) {
         // Image setup
         int width = ImGui::GetContentRegionAvail().x;
         int height = ImGui::GetContentRegionAvail().y;
+
         renderer.onResize(width, height);
+        mainCamera->onResize(width, height);
+
+        // Main real time tracer
+        if (realTimeRendering) {
+            startTime = glfwGetTime();
+            renderer.raytraceWorld(world, width, height, mainCamera);
+            elapsedTime = (glfwGetTime() - startTime) * 1000;
+        }
 
         ImGui::Image(
                 (ImTextureID)renderer.getTextureID(),
-                ImGui::GetContentRegionAvail(),
+                ImGui::GetContentRegionAvail(), // Use texture size instead?
                 ImVec2(0, 1),
                 ImVec2(1, 0)
                 );
@@ -97,12 +138,15 @@ int main(void) {
 
         ImGui::Begin("Settings");
 
-        // Render for viewport
-        ImGui::Checkbox("Demo Window", &showDemoWindow);
+        ImGui::Text("Render time: %.1f ms", elapsedTime);
+        ImGui::Separator();
+        ImGui::Text("Use RMB to enable camera movement in real time");
+        ImGui::Checkbox("Real Time Raytracing", &realTimeRendering);
+        ImGui::Checkbox("ImGui Demo Window", &showDemoWindow);
         if (ImGui::Button("Render raycast")) {
             startTime = glfwGetTime();
 
-            renderer.raytraceWorld(world, width, height);
+            renderer.raytraceWorld(world, width, height, mainCamera);
 
             elapsedTime = (glfwGetTime() - startTime) * 1000;
         }
@@ -111,7 +155,7 @@ int main(void) {
         if (ImGui::Button("Export to PPM")) {
             startTime = glfwGetTime();
 
-            renderer.exportRaytracedPPM(world, width, height);
+            renderer.exportRaytracedPPM(world, width, height, mainCamera);
 
             elapsedTime = (glfwGetTime() - startTime) * 1000;
         }
@@ -128,15 +172,16 @@ int main(void) {
         const unsigned char min = 0;
         const unsigned char max = 255;
         ImGui::PushItemWidth(150);
+        ImGui::SeparatorText("Render options");
         ImGui::DragInt("Number of samples per pixel", renderer.getSamplesPerPixel());
         ImGui::DragInt("Number of light ray bounces", renderer.getMaxDepth());
 
-        ImGui::RadioButton("Render Diffuse", renderer.getRenderType(), 0); ImGui::SameLine();
-        ImGui::RadioButton("Render Normals", renderer.getRenderType(), 1); ImGui::SameLine();
+        //ImGui::SeparatorText("Render types");
+        ImGui::RadioButton("Render Diffuse", renderer.getRenderType(), 0);
+        ImGui::RadioButton("Render Normals", renderer.getRenderType(), 1);
         ImGui::RadioButton("Render Hit points", renderer.getRenderType(), 2);
         ImGui::PopItemWidth();
 
-        ImGui::Text("Render time: %.1f ms", elapsedTime);
         ImGui::End();
 
         uiLayer.end();

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <glm/glm.hpp>
 #include "Common.hpp"
 
 using std::sqrt;
@@ -23,6 +24,14 @@ class Vec3 {
             e[2] += v.e[2];
             return *this;
         }
+
+        Vec3& operator-=(const Vec3 &v) {
+            e[0] -= v.e[0];
+            e[1] -= v.e[1];
+            e[2] -= v.e[2];
+            return *this;
+        }
+
 
         Vec3& operator*=(const double t) {
             e[0] *= t;
@@ -105,6 +114,11 @@ inline Vec3 randomInUnitSphere() {
         if (p.lengthSquared() >= 1) continue;
         return p;
     }
+}
+
+// GLM adapter utilities
+inline Vec3 toVec3(const glm::vec3& glmVec) {
+    return Vec3(glmVec.x, glmVec.y, glmVec.z);
 }
 
 // Type aliases for Vec3

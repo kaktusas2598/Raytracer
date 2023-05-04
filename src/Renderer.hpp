@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Camera.hpp"
 #include "Color.hpp"
 #include "Common.hpp"
 #include "Hittable.hpp"
 #include "Texture.hpp"
+#include "Camera.hpp"
 
 class Renderer {
     public:
@@ -12,9 +12,9 @@ class Renderer {
         ~Renderer() { delete[] buffer; }
 
         // Raytrace to texture pixel buffer
-        void raytraceWorld(const Hittable& world, uint32_t width, uint32_t height);
+        void raytraceWorld(const Hittable& world, uint32_t width, uint32_t height, Camera* camera);
         // Raytrace to fstream and write PPM image
-        void exportRaytracedPPM(const Hittable& world, uint32_t width, uint32_t height);
+        void exportRaytracedPPM(const Hittable& world, uint32_t width, uint32_t height, Camera* camera);
 
         void generateCheckerTexture(uint32_t width, uint32_t height);
 
@@ -45,9 +45,8 @@ class Renderer {
                     // Calculate diffuse factor, base on the angle between light's direction and normal of ray/world intersection
                     double intensity = std::max(dot(rec.normal,-lightDir), 0.0); // == cos(angle)
                     return intensity * 0.5 * (rec.normal + Color(1,1,1));
-                    //rec
 
-                    // Visualise spehere's normals
+                    // Visualise spehere's normals only
                     return 0.5 * (rec.normal + Color(1,1,1));
                 } else if (renderType == 2) {
                     // Visualise ray hit points
@@ -63,9 +62,7 @@ class Renderer {
     private:
         shared_ptr<Texture> image = nullptr;
         unsigned char* buffer = nullptr;
-        int maxDepth = 10; //<<< Maximum number of light ray bounces
-        int samplesPerPixel = 5; // Higher sample count will solve aliasing issues, but decrease performance
+        int maxDepth = 5; //<<< Maximum number of light ray bounces
+        int samplesPerPixel = 1; // Higher sample count will solve aliasing issues, but decrease performance
         int renderType = 0;
-
-        Camera camera;
 };
