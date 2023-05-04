@@ -45,9 +45,8 @@ class Renderer {
                     // Calculate diffuse factor, base on the angle between light's direction and normal of ray/world intersection
                     double intensity = std::max(dot(rec.normal,-lightDir), 0.0); // == cos(angle)
                     return intensity * 0.5 * (rec.normal + Color(1,1,1));
-                    //rec
 
-                    // Visualise spehere's normals
+                    // Visualise spehere's normals only
                     return 0.5 * (rec.normal + Color(1,1,1));
                 } else if (renderType == 2) {
                     // Visualise ray hit points
