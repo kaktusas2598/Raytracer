@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Camera.hpp"
 #include "Color.hpp"
 #include "Common.hpp"
 #include "Hittable.hpp"
 #include "Texture.hpp"
+#include "Camera.hpp"
 
 class Renderer {
     public:

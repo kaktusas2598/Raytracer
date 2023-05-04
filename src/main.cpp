@@ -31,32 +31,17 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
         realTimeRendering = !realTimeRendering;
 
-    // MOVE all this to camera class
-    if (realTimeRendering) {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    } else {
-
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
-
-    Camera* cam = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
-    cam->onKeyPress(key, action, deltaTime);
+    // Example of setting user pointer to handle input
+    //Camera* cam = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
+    //cam->onKeyPress(key, action, deltaTime);
 }
 
 static void mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
-    Camera* cam = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
-    cam->onMouseMove(xpos, ypos);
-
-    }
-
-void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
-{
-    // TODO: camera on update mouse button behaviour
-    //if (button != GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //Camera* cam = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
+    //cam->onMouseMove(xpos, ypos);
 }
+
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) { }
 
 
 int main(void) {
@@ -115,7 +100,7 @@ int main(void) {
 
         /* Poll for and process events */
         glfwPollEvents();
-        mainCamera->onUpdate(deltaTime);
+        mainCamera->onUpdate(window, deltaTime);
 
         // Start the Dear ImGui frame
         uiLayer.begin();
@@ -154,6 +139,8 @@ int main(void) {
         ImGui::Begin("Settings");
 
         ImGui::Text("Render time: %.1f ms", elapsedTime);
+        ImGui::Separator();
+        ImGui::Text("Use RMB to enable camera movement in real time");
         ImGui::Checkbox("Real Time Raytracing", &realTimeRendering);
         ImGui::Checkbox("ImGui Demo Window", &showDemoWindow);
         if (ImGui::Button("Render raycast")) {
@@ -185,11 +172,13 @@ int main(void) {
         const unsigned char min = 0;
         const unsigned char max = 255;
         ImGui::PushItemWidth(150);
+        ImGui::SeparatorText("Render options");
         ImGui::DragInt("Number of samples per pixel", renderer.getSamplesPerPixel());
         ImGui::DragInt("Number of light ray bounces", renderer.getMaxDepth());
 
-        ImGui::RadioButton("Render Diffuse", renderer.getRenderType(), 0); ImGui::SameLine();
-        ImGui::RadioButton("Render Normals", renderer.getRenderType(), 1); ImGui::SameLine();
+        //ImGui::SeparatorText("Render types");
+        ImGui::RadioButton("Render Diffuse", renderer.getRenderType(), 0);
+        ImGui::RadioButton("Render Normals", renderer.getRenderType(), 1);
         ImGui::RadioButton("Render Hit points", renderer.getRenderType(), 2);
         ImGui::PopItemWidth();
 

@@ -2,79 +2,61 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
-#include "GLFW/glfw3.h"
 
 Camera::Camera(float vertFOV, float near, float far) :
     verticalFOV(vertFOV), nearClip(near), farClip(far)
 {
     forwardDirection = glm::vec3(0, 0, -1);
-    rightDirection = glm::cross(forwardDirection, glm::vec3(0.0, 1.0, 0.0));
     position = glm::vec3(0, 0, 3);
 
     // HACK:
     recalculateView();
 }
 
+bool Camera::onUpdate(GLFWwindow* window, float timeStep) {
+    double x, y;
+    glfwGetCursorPos(window, &x, &y);
+    glm::vec2 mousePosition = glm::vec2(x, y);
+    glm::vec2 delta = (mousePosition - lastMousePosition) * 0.002f; // mouse sensitivity
+    lastMousePosition = mousePosition;
 
-void Camera::onKeyPress(int key, int action, float timeStep) {
-    // TODO: update actual movement from onUpdate() only set directions here
-	float speed = 5.0f;
+    // Camera movement disabled if RMB is not held down
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) != GLFW_PRESS) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        return false;
+    }
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
+    bool moved = false;
+
+    float speed = 5.0f;
 	const glm::vec3 upDirection(0.0, 1.0, 0.0);
-    rightDirection = glm::cross(forwardDirection, upDirection);
+    glm::vec3 rightDirection = glm::cross(forwardDirection, upDirection);
 
-	if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-	    currentMovement = CameraMovement::FORWARD;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		position += forwardDirection * speed * timeStep;
         moved = true;
-	} else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-	    currentMovement = CameraMovement::BACKWARD;
+    } else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 		position -= forwardDirection * speed * timeStep;
         moved = true;
     }
 
-    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-	    currentMovement = CameraMovement::LEFT;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
 		position -= rightDirection * speed * timeStep;
         moved = true;
-	} else if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-	    currentMovement = CameraMovement::RIGHT;
+    } else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 		position += rightDirection * speed * timeStep;
         moved = true;
 	}
 
-	if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
-	    currentMovement = CameraMovement::DOWN;
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
 		position -= upDirection * speed * timeStep;
         moved = true;
-	} else if (key == GLFW_KEY_E && action == GLFW_PRESS) {
-	    currentMovement = CameraMovement::UP;
+    } else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
 		position += upDirection * speed * timeStep;
         moved = true;
-	} else {
-	    currentMovement = CameraMovement::NONE;
 	}
 
-	// TODO: rotation here based on mouse
-
-
-	//return moved;
-}
-
-void Camera::onMouseMove(double xpos, double ypos) {
-    glm::vec2 mousePosition = glm::vec2(xpos, ypos);
-    glm::vec2 delta = (mousePosition - lastMousePosition) * 0.002f; // mouse sensitivity
-    lastMousePosition = mousePosition;
-
-    // TODO: camera locking
-    //if (!Input::IsMouseButtonDown(MouseButton::Right))
-	//{
-		//Input::SetCursorMode(CursorMode::Normal);
-		//return false;
-	//}
-
-	//Input::SetCursorMode(CursorMode::Locked);
-
-    // Will go after movement stuff in Camera onUpdate()
     // Rotation
     if (delta.x != 0.0f || delta.y != 0.0f) {
         float pitchDelta = delta.y * getRotationSpeed();
@@ -85,10 +67,7 @@ void Camera::onMouseMove(double xpos, double ypos) {
         forwardDirection = glm::rotate(q, forwardDirection);
         moved = true;
     }
-}
 
-bool Camera::onUpdate(float timeStep) {
-    // TODO: implement, somehow route GLFW input for mouse move/buttons and key input to here
     if (moved) {
         recalculateView();
         recalculateRayDirections();
