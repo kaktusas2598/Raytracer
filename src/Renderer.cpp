@@ -25,6 +25,7 @@ void Renderer::raytraceWorld(const Hittable& world, uint32_t width, uint32_t hei
         }
     }
 
+    // FIXME: should be able to set data without updating width, height and only set size in onResize()
     image->setData(buffer);
     image->init(width, height);
 
