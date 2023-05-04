@@ -11,11 +11,13 @@
 
 // GLOBALS
 Texture* rayTracedImage = new Texture(GL_TEXTURE_2D);
-//Camera* mainCamera = new Camera();
-// FIXME: fix new camera system
+bool realTimeRendering = false;
 Camera* mainCamera = new Camera(45.0f, 0.1f, 100.0f);
 Renderer renderer;
 glm::vec2 lastMousePosition{0.0, 0.0};
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 // GLFW Callbacks
 void errorCallback(int error, const char* description) {
@@ -25,32 +27,19 @@ void errorCallback(int error, const char* description) {
 static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+    // Toggle real-time ray tracing
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+        realTimeRendering = !realTimeRendering;
 
     Camera* cam = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
     cam->onKeyPress(key, action);
 }
 
 static void mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
-    // TODO: should be in camera onUpdate method
-    //Camera* camera = renderer.getCamera();
-    glm::vec2 mousePosition = glm::vec2(xpos, ypos);
-    glm::vec2 delta = (mousePosition - lastMousePosition) * 0.002f; // mouse sensitivity
-    lastMousePosition = mousePosition;
+    Camera* cam = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
+    cam->onMouseMove(xpos, ypos);
 
-    // TODO: camera locking
-
-    // Will go after movement stuff in Camera onUpdate()
-    // Rotation
-    if (delta.x != 0.0f || delta.y != 0.0f) {
-        //float pitchDelta = delta.y * camera->getRotationSpeed();
-        //float yawDelta = delta.x * camera->getRotationSpeed();
-
-        //glm::quat q = glm::normalize(glm::cross(glm::angleAxis(-pitchDelta, rightDirection),
-                    //glm::angleAxis(-yawDelta, glm::vec3(0.0, 1.0, 0.0))));
-        //forwardDirection = glm::rotate(q, forwardDirection);
-        //moved = true;
     }
-}
 
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
@@ -112,8 +101,13 @@ int main(void) {
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         /* Poll for and process events */
         glfwPollEvents();
+        mainCamera->onUpdate(deltaTime);
 
         // Start the Dear ImGui frame
         uiLayer.begin();
@@ -134,10 +128,11 @@ int main(void) {
         mainCamera->onResize(width, height);
 
         // Main real time tracer
-        // NOTE: blocks imgui wigets not allowing to change them
-        startTime = glfwGetTime();
-        renderer.raytraceWorld(world, width, height, mainCamera);
-        elapsedTime = (glfwGetTime() - startTime) * 1000;
+        if (realTimeRendering) {
+            startTime = glfwGetTime();
+            renderer.raytraceWorld(world, width, height, mainCamera);
+            elapsedTime = (glfwGetTime() - startTime) * 1000;
+        }
 
         ImGui::Image(
                 (ImTextureID)renderer.getTextureID(),
@@ -151,7 +146,8 @@ int main(void) {
         ImGui::Begin("Settings");
 
         ImGui::Text("Render time: %.1f ms", elapsedTime);
-        ImGui::Checkbox("Demo Window", &showDemoWindow);
+        ImGui::Checkbox("Real Time Raytracing", &realTimeRendering);
+        ImGui::Checkbox("ImGui Demo Window", &showDemoWindow);
         if (ImGui::Button("Render raycast")) {
             startTime = glfwGetTime();
 

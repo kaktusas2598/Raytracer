@@ -4,12 +4,26 @@
 
 #include "Common.hpp"
 
+
+enum CameraMovement {
+    NONE,
+    FORWARD,
+    BACKWARD,
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN
+};
+
 class Camera {
     public:
         Camera();
         Camera(float vertFOV, float near, float far);
 
         void onKeyPress(int key, int action);
+        void onMouseMove(double xpos, double ypos);
+        //void processKeyboard(CameraMovement direction, float deltaTime);
+        //void processMouseMovement(float xOffset, float yOffset);
 
         bool onUpdate(float timeStep);
         void onResize(uint32_t width, uint32_t height);
@@ -44,12 +58,16 @@ class Camera {
 
         glm::vec3 position{0.0, 0.0, 0.0};
         glm::vec3 forwardDirection{0.0, 0.0, 0.0};
+        glm::vec3 rightDirection;
 
         // Cached ray directions
         std::vector<glm::vec3> rayDirections;
 
         glm::vec2 lastMousePosition{0.0, 0.0};
         uint32_t viewportWidth = 0, viewportHeight = 0;
+
+        CameraMovement currentMovement = CameraMovement::NONE;
+        bool moved = false; // <<< Mouse has moved between the frames
         ///////////
 
         Point3 origin;
