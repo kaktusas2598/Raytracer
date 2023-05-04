@@ -17,7 +17,6 @@ enum CameraMovement {
 
 class Camera {
     public:
-        Camera();
         Camera(float vertFOV, float near, float far);
 
         void onKeyPress(int key, int action, float timeStep);
@@ -39,9 +38,9 @@ class Camera {
         const std::vector<glm::vec3>& getRayDirections() const { return rayDirections; }
         float getRotationSpeed();
 
-        Ray getRay(double u, double v) const {
-            return Ray(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
-        }
+        //Ray getRay(double u, double v) const {
+            //return Ray(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
+        //}
     private:
         void recalculateProjection();
         void recalculateView();
@@ -68,10 +67,4 @@ class Camera {
 
         CameraMovement currentMovement = CameraMovement::NONE;
         bool moved = false; // <<< Mouse has moved between the frames
-        ///////////
-
-        Point3 origin;
-        Point3 lowerLeftCorner;
-        Vec3 horizontal;
-        Vec3 vertical;
 };
