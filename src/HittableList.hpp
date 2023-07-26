@@ -6,7 +6,6 @@
 #include <vector>
 
 using std::shared_ptr;
-using std::make_shared;
 
 class HittableList : public Hittable {
     public:
@@ -19,6 +18,7 @@ class HittableList : public Hittable {
         virtual bool hit(
             const Ray& r, double tMin, double tMax, HitRecord& rec) const override;
 
+        const std::vector<shared_ptr<Hittable>>& getObjects() const { return objects; }
     public:
         std::vector<shared_ptr<Hittable>> objects;
 };

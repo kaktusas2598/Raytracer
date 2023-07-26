@@ -10,7 +10,10 @@ class Sphere : public Hittable {
         virtual bool hit(
             const Ray& r, double tMin, double tMax, HitRecord& rec) const override;
 
+        Point3* getCenter() { return &center; }
+        float* getRadius() { return (float*)&radius; }
+
     private:
-        Point3 center;
-        double radius;
+        Point3 center{0.0, 0.0, 0.0};
+        double radius = 0.5f;
 };

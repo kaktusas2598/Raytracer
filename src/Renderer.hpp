@@ -44,11 +44,13 @@ class Renderer {
                     Vec3 lightDir = normalize(Vec3(-1, -1, -1));
                     // Calculate diffuse factor, base on the angle between light's direction and normal of ray/world intersection
                     double intensity = std::max(dot(rec.normal,-lightDir), 0.0); // == cos(angle)
+                    return intensity * rec.color;
+                    // With normals
                     return intensity * 0.5 * (rec.normal + Color(1,1,1));
-
+                } else if (renderType == 2) {
                     // Visualise spehere's normals only
                     return 0.5 * (rec.normal + Color(1,1,1));
-                } else if (renderType == 2) {
+                } else if (renderType == 3) {
                     // Visualise ray hit points
                     return (rec.p);
                 }

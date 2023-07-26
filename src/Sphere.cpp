@@ -4,6 +4,7 @@
 // Ray - sphere intersection
 bool Sphere::hit(const Ray& r, double tMin, double tMax, HitRecord& rec) const {
     Vec3 oc = r.origin() - center;
+
     // Calculate quadratic formula coefficients for sphere equation
     auto a = r.direction().lengthSquared(); // same as dot product of r.direction * r.direction
     auto halfB = dot(oc, r.direction());

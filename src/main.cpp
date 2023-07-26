@@ -47,8 +47,12 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 int main(void) {
     // World
     HittableList world;
-    world.add(make_shared<Sphere>(Point3(0,0,-1), 0.5));
-    world.add(make_shared<Sphere>(Point3(0,-100.5,-1), 100));
+    shared_ptr<Sphere> sphere = make_shared<Sphere>(Point3(0,0,-1), 0.5);
+    sphere->Albedo = Color(1, 0, 1);
+    world.add(sphere);
+    shared_ptr<Sphere> ground = make_shared<Sphere>(Point3(0,-100.5,-1), 100);
+    ground->Albedo = Color(0, 1, 1);
+    world.add(ground);
 
     static float startTime = 0;
     static float elapsedTime = 0;
@@ -176,11 +180,25 @@ int main(void) {
         ImGui::DragInt("Number of samples per pixel", renderer.getSamplesPerPixel());
         ImGui::DragInt("Number of light ray bounces", renderer.getMaxDepth());
 
-        //ImGui::SeparatorText("Render types");
+        ImGui::SeparatorText("Render types");
         ImGui::RadioButton("Render Diffuse", renderer.getRenderType(), 0);
-        ImGui::RadioButton("Render Normals", renderer.getRenderType(), 1);
-        ImGui::RadioButton("Render Hit points", renderer.getRenderType(), 2);
+        ImGui::RadioButton("Render Colors", renderer.getRenderType(), 1);
+        ImGui::RadioButton("Render Normals", renderer.getRenderType(), 2);
+        ImGui::RadioButton("Render Hit points", renderer.getRenderType(), 3);
         ImGui::PopItemWidth();
+
+        ImGui::SeparatorText("Scene");
+        int i = 1;
+        for(auto& object : world.getObjects()) {
+            //glm::value_ptr(glm::vec3);
+            Sphere* s = (Sphere*)(object.get());
+            ImGui::PushID(i); // Solves issues with multiple elements sharing same names
+            ImGui::DragFloat3("Position", (float*)s->getCenter());
+            ImGui::DragFloat("Radius", s->getRadius());
+            ImGui::ColorEdit3("Albedo", (float*)&object->Albedo);
+            ImGui::PopID();
+            i++;
+        }
 
         ImGui::End();
 
